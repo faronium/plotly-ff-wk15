@@ -1,0 +1,13 @@
+bin/
+etc/
+lib/
+lib64
+pyvenv.cfg
+share/
+__pycache__/
+.ipynb_checkpoints/
+requirements.txt.backup
+requirements_080425.txt
+data/WA_County_Boundaries.geojson
+Untitled.ipynb
+Untitled1.ipynb
