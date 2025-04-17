@@ -104,7 +104,6 @@ for i,feature in enumerate(counties['features']):
 def get_regs_pct_by_county(df_filtered):
     def count_rows(series):
         return (len(series))
-    print(df_filtered.shape)
     total_regs_by_county_year = df_filtered.groupby(['County','Model Year'])['County'].apply(count_rows)
     total_regs_by_county_year.name = 'count'
 
