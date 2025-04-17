@@ -1,1 +1,1 @@
-web: gunicorn plotly-ff-wk15:server
+web: gunicorn app:server
