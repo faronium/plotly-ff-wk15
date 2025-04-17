@@ -1,1 +1,1 @@
-web: gunicorn snowapp:server
+web: gunicorn app:server
