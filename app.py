@@ -84,11 +84,6 @@ else:
     dfwa = process_evdata()
 dfwa = dfwa.sort_values(by=['Model Year'])
 yearlist = dfwa['Model Year'].unique()
-yearlist
-
-
-# In[2]:
-
 
 county_file = open('data/WA_County_Boundaries_fromshape.geojson', 'r')
 counties = json.load(county_file)
@@ -106,27 +101,24 @@ for i,feature in enumerate(counties['features']):
 
 #print(len(countylist),len(dfwa.County.unique()))
 
+def get_regs_pct_by_county(df_filtered):
+    def count_rows(series):
+        return (len(series))
+    print(df_filtered.shape)
+    total_regs_by_county_year = df_filtered.groupby(['County','Model Year'])['County'].apply(count_rows)
+    total_regs_by_county_year.name = 'count'
 
-# In[3]:
+    #Unstack blindly. Assume this assumes the highest level first, which is year in this case.
+    total_regs_by_county_year = total_regs_by_county_year.unstack()
 
+    #Calculate the percentages per county for each year.
+    total_regs_by_county_year_pct = np.log(100*total_regs_by_county_year/total_regs_by_county_year.sum())
+    return(total_regs_by_county_year_pct)
 
-# #Now have to find when that peak occurred...!
-# def count_rows(series):
-#     return (len(series))
-# #lets get a count of the number of registrations per county then calculate the percentage of statewide totals in each county. Stratifies by year possibly
-# total_regs_by_county = dfwa.groupby('County')['County'].apply(count_rows)
-# total_regs_by_county_year = dfwa.groupby(['County','Model Year'])['County'].apply(count_rows)
-# total_regs_by_county_year.name = 'count'
-
-# #Unstack blindly. Assume this assumes the highest level first, which is year in this case.
-# total_regs_by_county_year = total_regs_by_county_year.unstack()
-
-# #Calculate the percentages per county for each year. 
-# total_regs_by_county_year_pct = np.log(100*total_regs_by_county_year/total_regs_by_county_year.sum())
-
-
-# In[6]:
-
+evtypes = dfwa['Electric Vehicle Type'].unique()
+total_regs_by_county_year_pct_bev = get_regs_pct_by_county(dfwa.loc[dfwa['Electric Vehicle Type'].isin([evtypes[0]]),:])
+total_regs_by_county_year_pct_phev = get_regs_pct_by_county(dfwa.loc[dfwa['Electric Vehicle Type'].isin([evtypes[1]]),:])
+total_regs_by_county_year_pct_both = get_regs_pct_by_county(dfwa)
 
 #App will be a choropleth map colourized by percentage statewide of registrations per year with a slider element for the model, year. There will be a sunburst chart showing the 
 
@@ -144,8 +136,8 @@ slider = html.Div(
     [
         dbc.Label("Select Model Year:"),
         dcc.Slider(
-            min=2000, 
-            max=2025, 
+            min=2000,
+            max=2025,
             step=None,
             value=2014,
             marks={int(i): f'{i}' for i in yearlist},
@@ -273,17 +265,13 @@ def map_ev_pct(year,evtype):
     year=str(year)
     if evtype == []:
         evtype = evtypes
-    def count_rows(series):
-        return (len(series))
-    df_filtered = dfwa.loc[dfwa['Electric Vehicle Type'].isin(evtype),:]
-    total_regs_by_county_year = df_filtered.groupby(['County','Model Year'])['County'].apply(count_rows)
-    total_regs_by_county_year.name = 'count'
+    if evtype == ['Battery Electric Vehicle (BEV)']:
+        total_regs_by_county_year_pct = total_regs_by_county_year_pct_bev
+    elif evtype == ['Plug-in Hybrid Electric Vehicle (PHEV)']:
+        total_regs_by_county_year_pct = total_regs_by_county_year_pct_phev
+    else:
+        total_regs_by_county_year_pct = total_regs_by_county_year_pct_both
 
-    #Unstack blindly. Assume this assumes the highest level first, which is year in this case.
-    total_regs_by_county_year = total_regs_by_county_year.unstack()
-
-    #Calculate the percentages per county for each year.
-    total_regs_by_county_year_pct = np.log(100*total_regs_by_county_year/total_regs_by_county_year.sum())
     minval = total_regs_by_county_year_pct.min().min()
     maxval = total_regs_by_county_year_pct.max().max()
     fig = go.Figure(data=go.Choropleth(
@@ -426,10 +414,3 @@ def make_ev_barplot(evtype):
 
 if __name__ == '__main__':
     app.run(debug=False)
-
-
-# In[ ]:
-
-
-
-
