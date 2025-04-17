@@ -425,7 +425,7 @@ def make_ev_barplot(evtype):
     return(px.box(df_filtered.sort_values(by=['Model Year']), y='Electric Range',x='Model Year'))
 
 if __name__ == '__main__':
-    app.run(debug=True,port=8088)
+    app.run(debug=False)
 
 
 # In[ ]:
