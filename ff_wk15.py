@@ -131,11 +131,11 @@ for i,feature in enumerate(counties['features']):
 #App will be a choropleth map colourized by percentage statewide of registrations per year with a slider element for the model, year. There will be a sunburst chart showing the 
 
 #Lets make the app!
-app = Dash(__name__,
+plotly-ff-wk15 = Dash(__name__,
                   external_stylesheets = [dbc.themes.SANDSTONE],
                   title = 'FF Week 15: Washington EVs'
               )
-server = app.server
+server = aplotly-ff-wk15.server
 header = html.H4(
     "Exploring Washington State EV Range", className="bg-primary p-2 mb-2 text-center"
 )
@@ -233,7 +233,7 @@ thebarplot = dbc.Card([
     className="shadow",
     body=True,
 )
-app.layout = dbc.Container(
+plotly-ff-wk15.layout = dbc.Container(
     style={"backgroundColor": 'darkseagreen', "minHeight": "100vh", "padding": "20px"},
     children=[
         dbc.Row([dbc.Col([header,],width=12)]),
@@ -264,7 +264,7 @@ app.layout = dbc.Container(
     className="dbc dbc-ag-grid",
 )
 
-@app.callback(
+@plotly-ff-wk15.callback(
     Output('ev-pct-map','figure'),
     Input('ev-pct-slider','value'),
     Input('ev-type-dropdown','value'),
@@ -326,7 +326,7 @@ def map_ev_pct(year,evtype):
     )
     return(fig)
 
-@app.callback(
+@plotly-ff-wk15.callback(
     Output('sunplot-title', 'children'),
     Input('ev-pct-map', 'clickData'),
     Input('ev-type-dropdown','value'),
@@ -344,7 +344,7 @@ def make_sunplot_title(clickdata,evtype):
         evtype_str = f'{evtype[0]} and {evtype[1]}'
     return html.P('EV Make, Model and Range for '+ evtype_str + ' in ' + thecounty + ' County')
 
-@app.callback(
+@plotly-ff-wk15.callback(
     Output('barplot-title', 'children'),
     Input('ev-type-dropdown','value'),
 )
@@ -358,7 +358,7 @@ def make_barplot_title(evtype):
     return html.P('Evolution of EV range for '+ evtype_str + ' in Washington')
 
 
-@app.callback(
+@plotly-ff-wk15.callback(
     Output('map-title', 'children'),
     Input('ev-pct-slider', 'value'),
     Input('ev-type-dropdown','value'),
@@ -377,7 +377,7 @@ def make_map_title(year,evtype):
     return html.P("Model Year "+year+" EV Registration Proportion for " + evtype_str + " by County. WA, USA")
 
 
-@app.callback(
+@plotly-ff-wk15.callback(
     Output('ev-sunplot', 'figure'),
     Input('ev-pct-slider','value'),
     Input('ev-pct-map', 'clickData'),
@@ -414,7 +414,7 @@ def ev_sunburst_plot(year,clickdata,evtype):
     )
     return(fig)
 
-@app.callback(
+@plotly-ff-wk15.callback(
     Output('ev-barplot','figure'),
     Input('ev-type-dropdown','value'),
 )
@@ -425,7 +425,7 @@ def make_ev_barplot(evtype):
     return(px.box(df_filtered.sort_values(by=['Model Year']), y='Electric Range',x='Model Year'))
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    plotly-ff-wk15.run(debug=False)
 
 
 # In[ ]:
