@@ -128,12 +128,12 @@ app = Dash(__name__,
               )
 server = app.server
 header = html.H4(
-    "Exploring Washington State EV Range", className="bg-primary p-2 mb-2 text-center"
+    "Exploring Washington State EV Range", className="bg-light p-2 mb-2 text-center"
 )
 evtypes = dfwa['Electric Vehicle Type'].unique().tolist()
 slider = html.Div(
     [
-        dbc.Label("Select Model Year:"),
+        dbc.Label(html.H5("Select Model Year:")),
         dcc.Slider(
             min=2000,
             max=2025,
@@ -150,12 +150,12 @@ slider = html.Div(
 
 dropdown = html.Div(
     [
-        dbc.Label("Select BEV or PHEV"),
+        dbc.Label(html.H5("Select BEV or PHEV")),
         dcc.Dropdown(
             options=[{'label': ev_type, 'value': ev_type} for ev_type in dfwa['Electric Vehicle Type'].unique()],
             value=evtypes,
             id="ev-type-dropdown",
-            className="p-6",
+            className="p-1",
             multi=True,
         ),
     ],
@@ -282,7 +282,7 @@ def map_ev_pct(year,evtype):
         zmin = minval,
         zmax = maxval,
         marker_line_color='white', # line markers between states
-        colorscale='Reds',
+        colorscale='Blues',
         colorbar=dict(
             tickvals=np.log([0.1,1,5,10,50]),
             ticktext=["0.1%","1%","5%", "10%", "50%"],
@@ -392,7 +392,7 @@ def ev_sunburst_plot(year,clickdata,evtype):
         path=['Make', 'Model'],
         values='Electric Range',
         color='Electric Range',
-        color_continuous_scale='Greens',
+        color_continuous_scale='Oranges',
         #height=700,
     )
     fig.update_coloraxes( 
