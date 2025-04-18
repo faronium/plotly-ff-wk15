@@ -10,6 +10,7 @@ import dash_bootstrap_components as dbc
 import dash_ag_grid as dag
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.colors import n_colors
 import pandas as pd
 import numpy as np
 import json
@@ -21,26 +22,12 @@ def process_evdata():
     df['Model Year'] = df['Model Year'].astype('str')
     dfwa = df.loc[df.State == 'WA',:]
 
-
-    #for index, row in dfwa.iterrows():
-    #    try:
-    #        value = row['Vehicle Location']
-    #        wkt.loads(value)
-    #    except Exception:
-    #       print(f'{index} [{len(value)}] {value!r} {row}')
-
     #lets drop the rows with empty locations. There are less than 10.
     dfwa = dfwa.loc[~(dfwa['Vehicle Location'] == ''),:]
 
-    #Make the location geoseries from the well known text (WKT) in Vehicle Location
-    #gs = gpd.GeoSeries.from_wkt(dfwa['Vehicle Location'])
-
-    #Insert into the dataframe and make the dataframe into a geopandas
-    #dfwa = gpd.GeoDataFrame(dfwa, geometry=gs, crs="EPSG:4326")
-
-    #Ditch the text WKT
-    dfwa = dfwa.drop(columns=['Vehicle Location'])
-
+    #We aren't using all of this data. Drop unused rows.
+    keeper_cols = ['County','Model Year','Make','Model','Electric Vehicle Type','Electric Range']
+    dfwa = dfwa.loc[:,keeper_cols]
 
     #We have EVs with a model range set as ''. Have to correct or ditch. Then can set the Electric Range data type to int.
     dfwa[dfwa['Electric Range'].isna()] = 0
@@ -59,15 +46,9 @@ def process_evdata():
             fixable_count += 1
             fixable_zeros_count += model_numzeros
             mean_range = np.mean(carranges[~(carranges==0)])
-            print(
-                'fixing ',carmodel,' with ',model_numzeros,'zeros',fixable_zeros_count
-            )
             dfwa.loc[((dfwa['Model'] == carmodel) & (dfwa['Electric Range'] == 0)),'Electric Range'] = mean_range
         elif 0 in carranges and len(carranges) == 1:
             #Can't fix it, drop the rows of the dataframe for the model
-            print(
-                "Can't fix ",carmodel,'with',model_numzeros,'rows without range information. Dropping the rows.'
-            )
             dfwa = dfwa.loc[~((dfwa['Model'] == carmodel) & (dfwa['Electric Range'] == 0)),:]
     dfwa.to_csv('data/Electric_Vehicle_Population_Data_WA_Processed.csv',index=False)
     return(dfwa)
@@ -181,7 +162,7 @@ statemapfig = dbc.Card([
     dbc.CardBody([
         dcc.Graph(
             id='ev-pct-map',
-            style={"height": "80vh"},
+            style={"height": "60vh"},
             config={'scrollZoom': False},
         )
     ])
@@ -200,7 +181,7 @@ sunplotfig = dbc.Card([
     dbc.CardBody([
         dcc.Graph(
             id='ev-sunplot',
-            style={"height": "80vh"}
+            style={"height": "60vh"}
         )
     ])],
     className="shadow",
@@ -251,7 +232,6 @@ app.layout = dbc.Container(
             ],  width=12),
         ]),
     ],
-    fluid=True,
     className="dbc dbc-ag-grid",
 )
 
@@ -409,7 +389,27 @@ def make_ev_barplot(evtype):
     if evtype == []:
         evtype = evtypes
     df_filtered = dfwa.loc[dfwa['Electric Vehicle Type'].isin(evtype),:]
-    return(px.box(df_filtered.sort_values(by=['Model Year']), y='Electric Range',x='Model Year'))
+    df_filtered['Model Year'] = df_filtered['Model Year'].astype('int')
+    df_filtered = df_filtered.sort_values(by=['Model Year'])
+
+    df_filtered = df_filtered.loc[df_filtered['Model Year'].isin(range(2010,2026,1)),:]
+
+    nyears = len(years)
+    colors = n_colors('rgb(5, 200, 200)', 'rgb(200, 10, 10)', nyears, colortype='rgb')
+
+    fig = go.Figure()
+    for coloridx,color in enumerate(colors):
+        fig.add_trace(
+            go.Violin(
+                x=df_filtered.loc[df_filtered['Model Year'] == years[coloridx],'Electric Range'], 
+                y=df_filtered.loc[df_filtered['Model Year'] == years[coloridx],'Model Year'],
+                name=str(years[coloridx]),
+                line_color=color
+            )
+         )
+    fig.update_traces(orientation='h', side='positive', width=5, points=False)
+
+    return(fig)
 
 if __name__ == '__main__':
     app.run(debug=False)
