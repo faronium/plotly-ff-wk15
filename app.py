@@ -393,7 +393,7 @@ def make_ev_barplot(evtype):
     df_filtered = df_filtered.sort_values(by=['Model Year'])
 
     df_filtered = df_filtered.loc[df_filtered['Model Year'].isin(range(2010,2026,1)),:]
-
+    years = df_filtered['Model Year'].unique()
     nyears = len(years)
     colors = n_colors('rgb(5, 200, 200)', 'rgb(200, 10, 10)', nyears, colortype='rgb')
 
